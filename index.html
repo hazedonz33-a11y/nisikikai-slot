@@ -4,27 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f3460">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#ffffff">
   <title>錦　櫂 ふりかけスロット</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html, body {
-      height: 100%;
-      overscroll-behavior: none;
-    }
+    html, body { height: 100%; overscroll-behavior: none; }
 
     body {
       min-height: 100vh;
       min-height: 100dvh;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: #f0ede8;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-      color: #fff;
+      color: #1a1a1a;
       padding:
         calc(16px + env(safe-area-inset-top))
         calc(16px + env(safe-area-inset-right))
@@ -33,77 +30,104 @@
     }
 
     h1 {
-      font-size: clamp(1.3rem, 6vw, 2rem);
-      margin-bottom: 4px;
+      font-size: clamp(1.4rem, 6vw, 2.2rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
       text-align: center;
-      background: linear-gradient(90deg, #f7c948, #ff8c42, #f7c948);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      filter: drop-shadow(0 2px 8px rgba(247,201,72,0.4));
-      letter-spacing: 0.04em;
+      color: #1a1a1a;
+      margin-bottom: 4px;
     }
 
     .subtitle {
       font-size: clamp(0.72rem, 3vw, 0.85rem);
-      color: #aaa;
-      margin-bottom: clamp(16px, 4vw, 30px);
+      color: #999;
       text-align: center;
+      margin-bottom: clamp(14px, 4vw, 26px);
     }
 
+    /* ── Machine ── */
     .machine {
       width: min(520px, calc(100vw - 32px));
-      background: linear-gradient(160deg, #2d2d2d, #1a1a1a);
-      border-radius: 24px;
-      padding: clamp(16px, 4vw, 30px) clamp(14px, 4vw, 28px) clamp(20px, 5vw, 28px);
+      background: #ffffff;
+      border-radius: 28px;
+      padding: clamp(16px, 4vw, 28px) clamp(14px, 4vw, 24px) clamp(18px, 5vw, 28px);
       box-shadow:
-        0 0 0 4px #f7c948,
-        0 0 0 8px #1a1a1a,
-        0 20px 60px rgba(0,0,0,0.7);
+        0 0 0 3px #e8c84a,
+        0 0 0 6px #ffffff,
+        0 16px 48px rgba(0,0,0,0.12);
     }
 
-    .machine::before {
-      content: '🎰 NISIKI-KAI SLOT 🎰';
-      display: block;
+    .machine-header {
       text-align: center;
-      font-size: clamp(0.65rem, 2.8vw, 0.8rem);
-      letter-spacing: 0.12em;
-      color: #f7c948;
-      margin-bottom: clamp(12px, 3vw, 18px);
-      font-weight: bold;
+      font-size: clamp(0.62rem, 2.6vw, 0.76rem);
+      letter-spacing: 0.18em;
+      color: #c8a830;
+      font-weight: 700;
+      margin-bottom: clamp(10px, 3vw, 16px);
     }
 
+    /* ── Reels ── */
     .reels {
       display: flex;
       gap: clamp(8px, 2.5vw, 12px);
-      margin-bottom: clamp(14px, 4vw, 20px);
+      margin-bottom: 8px;
     }
 
     .reel-wrapper {
       flex: 1;
       aspect-ratio: 1;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
-      border: 3px solid #444;
-      background: #111;
+      border: 2px solid #e8e8e8;
+      background: #fafafa;
       position: relative;
-      box-shadow: inset 0 0 16px rgba(0,0,0,0.6);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
     }
 
+    /* Sheen overlay */
     .reel-wrapper::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg,
-        rgba(0,0,0,0.35) 0%,
-        transparent 25%,
-        transparent 75%,
-        rgba(0,0,0,0.35) 100%
-      );
+      background: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, transparent 45%, transparent 55%, rgba(255,255,255,0.15) 100%);
       pointer-events: none;
       z-index: 2;
     }
 
+    /* Tappable state */
+    .reel-wrapper.can-stop {
+      cursor: pointer;
+      border-color: #e8c84a;
+      box-shadow: 0 0 0 3px rgba(232,200,74,0.25);
+    }
+    .reel-wrapper.can-stop:active { transform: scale(0.95); }
+
+    /* STOP label */
+    .stop-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .stop-label span {
+      font-size: clamp(0.7rem, 3vw, 0.9rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: transparent;
+      background: transparent;
+      padding: 4px 10px;
+      border-radius: 20px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .reel-wrapper.can-stop .stop-label span {
+      color: #fff;
+      background: rgba(0,0,0,0.28);
+    }
+
+    /* Reel image */
     .reel {
       width: 100%;
       height: 100%;
@@ -111,10 +135,9 @@
       align-items: center;
       justify-content: center;
     }
-
     .reel img {
-      width: 85%;
-      height: 85%;
+      width: 82%;
+      height: 82%;
       object-fit: contain;
       border-radius: 8px;
       user-select: none;
@@ -122,109 +145,131 @@
       display: block;
     }
 
-    .reel.spinning {
-      animation: spinBlur 0.08s linear infinite;
-    }
-
+    /* Spin animation */
+    .reel.spinning { animation: spinBlur 0.08s linear infinite; }
     @keyframes spinBlur {
       0%   { filter: blur(0px);  transform: scaleY(1);    }
       25%  { filter: blur(3px);  transform: scaleY(0.96); }
-      50%  { filter: blur(5px);  transform: scaleY(0.92); }
+      50%  { filter: blur(6px);  transform: scaleY(0.91); }
       75%  { filter: blur(3px);  transform: scaleY(0.96); }
       100% { filter: blur(0px);  transform: scaleY(1);    }
     }
 
+    /* Stop bounce */
     .reel.stopping {
-      animation: stopBounce 0.4s cubic-bezier(.36,.07,.19,.97) forwards;
+      animation: stopBounce 0.38s cubic-bezier(.36,.07,.19,.97) forwards;
     }
-
     @keyframes stopBounce {
-      0%   { transform: scaleY(0.92); filter: blur(3px); }
-      60%  { transform: scaleY(1.06); filter: blur(0);   }
-      80%  { transform: scaleY(0.97); }
-      100% { transform: scaleY(1);    filter: blur(0);   }
+      0%   { transform: scaleY(0.91); filter: blur(3px); }
+      55%  { transform: scaleY(1.07); filter: blur(0);   }
+      78%  { transform: scaleY(0.97); }
+      100% { transform: scaleY(1);    }
     }
 
+    /* Chance gimmick – wrapper flash */
+    .reel-wrapper.chance-glow {
+      border-color: #ff8c42 !important;
+      animation: chanceGlow 0.28s ease-in-out infinite alternate;
+    }
+    @keyframes chanceGlow {
+      from { box-shadow: 0 0 6px rgba(255,140,66,0.3); }
+      to   { box-shadow: 0 0 22px rgba(255,140,66,0.85), 0 0 40px rgba(232,200,74,0.4); }
+    }
+
+    /* Chance gimmick – reel slow pulse */
+    .reel.chance-pulse {
+      animation: chancePulse 0.5s ease-in-out infinite;
+    }
+    @keyframes chancePulse {
+      0%   { transform: scaleY(1);    filter: blur(0px); }
+      50%  { transform: scaleY(0.94); filter: blur(2px); }
+      100% { transform: scaleY(1);    filter: blur(0px); }
+    }
+
+    /* Winner glow */
     .reel-wrapper.winner {
-      border-color: #f7c948;
-      animation: winPulse 0.6s ease-in-out infinite alternate;
+      border-color: #e8c84a !important;
+      animation: winGlow 0.55s ease-in-out infinite alternate;
+    }
+    @keyframes winGlow {
+      from { box-shadow: 0 0 8px rgba(232,200,74,0.3); }
+      to   { box-shadow: 0 0 28px rgba(232,200,74,0.85), 0 0 48px rgba(232,200,74,0.35); }
     }
 
-    @keyframes winPulse {
-      from { box-shadow: inset 0 0 10px rgba(247,201,72,0.2), 0 0 10px rgba(247,201,72,0.4); }
-      to   { box-shadow: inset 0 0 30px rgba(247,201,72,0.5), 0 0 40px rgba(247,201,72,0.9); }
+    /* ── Hint ── */
+    .reel-hint {
+      text-align: center;
+      font-size: clamp(0.65rem, 2.6vw, 0.76rem);
+      color: #bbb;
+      height: 1.6em;
+      margin-bottom: clamp(8px, 2.5vw, 14px);
+      transition: color 0.3s;
     }
+    .reel-hint.active { color: #e8a020; font-weight: 600; }
 
+    /* ── Controls ── */
     .controls {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: clamp(10px, 3vw, 14px);
+      gap: clamp(8px, 2.5vw, 12px);
     }
 
     .credits-row {
       display: flex;
-      gap: clamp(16px, 5vw, 24px);
+      gap: clamp(20px, 6vw, 32px);
       font-size: clamp(0.78rem, 3.2vw, 0.9rem);
-      color: #ccc;
+      color: #888;
     }
-
     .credits-row span strong {
-      color: #f7c948;
-      font-size: clamp(0.95rem, 4vw, 1.15rem);
+      color: #1a1a1a;
+      font-size: clamp(1rem, 4.2vw, 1.2rem);
     }
 
     .message {
-      min-height: 2.4em;
+      min-height: 2.6em;
       font-size: clamp(0.78rem, 3.4vw, 1rem);
-      font-weight: bold;
+      font-weight: 700;
       text-align: center;
-      line-height: 1.3;
-      letter-spacing: 0.03em;
+      line-height: 1.4;
       padding: 0 4px;
+      color: #888;
     }
-
-    .message.win    { color: #f7c948; text-shadow: 0 0 12px rgba(247,201,72,0.8); }
-    .message.lose   { color: #888; }
-    .message.jackpot {
-      color: #ff4e50;
-      animation: jackpotFlash 0.4s linear infinite alternate;
+    .message.win     { color: #c88a00; }
+    .message.lose    { color: #bbb; }
+    .message.chance  { color: #e86020; animation: chanceMsgPulse 0.35s linear infinite alternate; }
+    .message.jackpot { color: #e83030; animation: jackpotFlash  0.35s linear infinite alternate; }
+    @keyframes chanceMsgPulse {
+      from { opacity: 0.65; } to { opacity: 1; }
     }
-
     @keyframes jackpotFlash {
-      from { text-shadow: 0 0 8px rgba(255,78,80,0.6); }
-      to   { text-shadow: 0 0 24px rgba(255,78,80,1), 0 0 40px rgba(255,200,0,0.8); }
+      from { text-shadow: none; }
+      to   { text-shadow: 0 0 18px rgba(232,48,48,0.7); }
     }
 
+    /* SPIN button */
     .spin-btn {
       width: min(260px, 80vw);
-      height: clamp(52px, 14vw, 60px);
+      height: clamp(52px, 14vw, 62px);
       border: none;
       border-radius: 32px;
-      background: linear-gradient(135deg, #f7c948, #ff8c42);
-      color: #1a1a1a;
+      background: linear-gradient(135deg, #f0d050, #e8a030);
+      color: #fff;
       font-size: clamp(1rem, 4.5vw, 1.25rem);
       font-weight: 900;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       cursor: pointer;
       touch-action: manipulation;
-      box-shadow: 0 4px 20px rgba(247,201,72,0.5), 0 2px 0 rgba(0,0,0,0.3);
-      transition: transform 0.1s, box-shadow 0.1s;
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(232,160,48,0.45), 0 2px 0 rgba(0,0,0,0.08);
+      transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
       -webkit-appearance: none;
       user-select: none;
     }
-
     .spin-btn:active:not(:disabled) {
       transform: scale(0.95) translateY(2px);
-      box-shadow: 0 2px 8px rgba(247,201,72,0.3);
+      box-shadow: 0 2px 8px rgba(232,160,48,0.3);
     }
-
-    .spin-btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    .spin-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
     /* Confetti */
     #confetti {
@@ -237,24 +282,30 @@
   </style>
 </head>
 <body>
-
 <canvas id="confetti"></canvas>
 
 <h1>錦　櫂 ふりかけスロット</h1>
 <p class="subtitle">全リール揃ったら当たり！</p>
 
 <div class="machine">
+  <div class="machine-header">🎰 NISIKI-KAI SLOT 🎰</div>
+
   <div class="reels">
-    <div class="reel-wrapper" id="w0">
+    <div class="reel-wrapper" id="w0" onclick="userStop(0)">
+      <div class="stop-label"><span>STOP</span></div>
       <div class="reel" id="r0"><img id="img0" src="" alt=""></div>
     </div>
-    <div class="reel-wrapper" id="w1">
+    <div class="reel-wrapper" id="w1" onclick="userStop(1)">
+      <div class="stop-label"><span>STOP</span></div>
       <div class="reel" id="r1"><img id="img1" src="" alt=""></div>
     </div>
-    <div class="reel-wrapper" id="w2">
+    <div class="reel-wrapper" id="w2" onclick="userStop(2)">
+      <div class="stop-label"><span>STOP</span></div>
       <div class="reel" id="r2"><img id="img2" src="" alt=""></div>
     </div>
   </div>
+
+  <p class="reel-hint" id="hint">SPIN を押してスタート</p>
 
   <div class="controls">
     <div class="credits-row">
@@ -276,21 +327,22 @@ const PRODUCTS = [
   { name: '錦　櫂ギフトセット',   img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004783_pkdF5lg.jpg' }
 ];
 
-let credits = 10, won = 0, spinning = false;
-let spinIntervals = [], currentIdx = [0,0,0], finalIdx = [0,0,0];
+// ── State ───────────────────────────────────────────────
+let credits = 10, won = 0;
+let gameState   = 'idle';                    // 'idle' | 'spinning' | 'gimmick'
+let reelState   = ['idle','idle','idle'];    // 'idle' | 'spinning' | 'stopped'
+let stoppedOrder = [];
+let spinIntervals = [null, null, null];
+let currentIdx  = [0, 0, 0];
+let finalIdx    = [0, 0, 0];
 
-function rand() { return Math.floor(Math.random() * PRODUCTS.length); }
+// ── Helpers ─────────────────────────────────────────────
+const rand = () => Math.floor(Math.random() * PRODUCTS.length);
 
 function showImage(i, idx) {
   const img = document.getElementById('img' + i);
   img.src = PRODUCTS[idx].img;
   img.alt = PRODUCTS[idx].name;
-}
-
-function updateCredits() {
-  document.getElementById('credits').textContent = credits;
-  document.getElementById('won').textContent = won;
-  document.getElementById('spinBtn').disabled = credits <= 0 || spinning;
 }
 
 function setMessage(text, cls = '') {
@@ -299,23 +351,38 @@ function setMessage(text, cls = '') {
   el.className = 'message ' + cls;
 }
 
+function setHint(text, active = false) {
+  const el = document.getElementById('hint');
+  el.textContent = text;
+  el.className = 'reel-hint' + (active ? ' active' : '');
+}
+
+function updateCredits() {
+  document.getElementById('credits').textContent = credits;
+  document.getElementById('won').textContent = won;
+  document.getElementById('spinBtn').disabled = gameState !== 'idle' || credits <= 0;
+}
+
+// ── SPIN ────────────────────────────────────────────────
 function spin() {
-  if (spinning || credits <= 0) return;
-  spinning = true;
+  if (gameState !== 'idle' || credits <= 0) return;
+
+  gameState    = 'spinning';
+  reelState    = ['spinning', 'spinning', 'spinning'];
+  stoppedOrder = [];
   credits--;
   updateCredits();
-  setMessage('スピン中...', '');
 
-  // Vibrate on spin (supported on Android Chrome)
-  if (navigator.vibrate) navigator.vibrate(30);
+  if (navigator.vibrate) navigator.vibrate(25);
 
   for (let i = 0; i < 3; i++) {
-    document.getElementById('w' + i).classList.remove('winner');
     finalIdx[i] = rand();
-  }
-
-  for (let i = 0; i < 3; i++) {
-    document.getElementById('r' + i).classList.add('spinning');
+    const w = document.getElementById('w' + i);
+    w.classList.remove('winner', 'chance-glow');
+    w.classList.add('can-stop');
+    const r = document.getElementById('r' + i);
+    r.classList.remove('stopping', 'chance-pulse');
+    r.classList.add('spinning');
     let c = currentIdx[i];
     spinIntervals[i] = setInterval(() => {
       c = (c + 1) % PRODUCTS.length;
@@ -323,58 +390,159 @@ function spin() {
     }, 80);
   }
 
-  [1200, 1900, 2600].forEach((delay, i) => setTimeout(() => stopReel(i), delay));
+  setMessage('リールをタップして止めてください！');
+  setHint('タップ → STOP', true);
 }
 
-function stopReel(i) {
+// ── User taps a reel ────────────────────────────────────
+function userStop(i) {
+  if (gameState !== 'spinning') return;
+  if (reelState[i] !== 'spinning') return;
+
+  const stillSpinning = reelState.filter(s => s === 'spinning').length;
+
+  // Is this the LAST reel? → check for 2-match gimmick
+  if (stillSpinning === 1 && stoppedOrder.length === 2) {
+    const [s0, s1] = stoppedOrder;
+    if (finalIdx[s0] === finalIdx[s1]) {
+      triggerChanceGimmick(i);
+      return;
+    }
+  }
+
+  stopReelNormal(i);
+}
+
+// ── Normal stop ─────────────────────────────────────────
+function stopReelNormal(i) {
   clearInterval(spinIntervals[i]);
+  reelState[i]  = 'stopped';
+  stoppedOrder.push(i);
+
   showImage(i, finalIdx[i]);
   currentIdx[i] = finalIdx[i];
 
-  if (navigator.vibrate) navigator.vibrate(40);
+  if (navigator.vibrate) navigator.vibrate(35);
 
-  const reel = document.getElementById('r' + i);
-  reel.classList.remove('spinning');
-  reel.classList.add('stopping');
-  reel.addEventListener('animationend', () => reel.classList.remove('stopping'), { once: true });
+  const w = document.getElementById('w' + i);
+  w.classList.remove('can-stop');
 
-  if (i === 2) setTimeout(checkResult, 500);
+  const r = document.getElementById('r' + i);
+  r.classList.remove('spinning');
+  r.classList.add('stopping');
+  r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
+
+  const remaining = reelState.filter(s => s === 'spinning').length;
+
+  if (remaining === 0) {
+    setTimeout(checkResult, 420);
+  } else {
+    updateHint();
+  }
 }
 
+function updateHint() {
+  const remaining = [0,1,2].filter(i => reelState[i] === 'spinning').length;
+  if (remaining === 1) {
+    // Do 2 stopped reels match?
+    if (stoppedOrder.length === 2 && finalIdx[stoppedOrder[0]] === finalIdx[stoppedOrder[1]]) {
+      setHint('2つ揃った！最後を止めて！', true);
+      setMessage('あと1つ！チャンスがあるかも…', '');
+    } else {
+      setHint('あと1つ！', true);
+    }
+  } else {
+    setHint('タップ → STOP', true);
+  }
+}
+
+// ── Chance gimmick ──────────────────────────────────────
+function triggerChanceGimmick(i) {
+  gameState = 'gimmick';
+
+  clearInterval(spinIntervals[i]);
+  reelState[i] = 'stopped';
+  stoppedOrder.push(i);
+
+  const matchIdx = finalIdx[stoppedOrder[0]]; // image from the 2 matching reels
+  const w = document.getElementById('w' + i);
+  const r = document.getElementById('r' + i);
+
+  // Remove can-stop immediately so no double-tap
+  w.classList.remove('can-stop');
+  r.classList.remove('spinning');
+
+  // ① Show the MATCHING image (tease!)
+  showImage(i, matchIdx);
+  setMessage('🔥 チャンス！！ 揃うか！？', 'chance');
+  setHint('');
+  w.classList.add('chance-glow');
+  r.classList.add('chance-pulse');
+  if (navigator.vibrate) navigator.vibrate([70, 35, 70, 35, 120]);
+
+  // ② After 1.4s → snap to actual final image
+  setTimeout(() => {
+    w.classList.remove('chance-glow');
+    r.classList.remove('chance-pulse');
+
+    showImage(i, finalIdx[i]);
+    currentIdx[i] = finalIdx[i];
+
+    r.classList.add('stopping');
+    r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
+
+    setTimeout(() => {
+      gameState = 'spinning'; // hand off to checkResult
+      checkResult();
+    }, 420);
+  }, 1400);
+}
+
+// ── Check result ─────────────────────────────────────────
 function checkResult() {
   const [a, b, c] = finalIdx;
   const isWin     = a === b && b === c;
   const isJackpot = isWin && a === 5;
 
+  gameState = 'idle';
+  reelState = ['idle', 'idle', 'idle'];
+  setHint('SPIN を押してスタート');
+  updateCredits();
+
   if (isWin) {
     const prize = isJackpot ? 30 : 10;
-    credits += prize; won += prize;
+    credits += prize;
+    won     += prize;
     for (let i = 0; i < 3; i++) document.getElementById('w' + i).classList.add('winner');
+
     if (isJackpot) {
-      setMessage('🎊 JACKPOT！ ギフトセット当選！\n+30コイン', 'jackpot');
+      setMessage('🎊 JACKPOT！ ギフトセット当選！ +30コイン', 'jackpot');
       if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
-      launchConfetti(150);
+      launchConfetti(160);
     } else {
-      setMessage(`🎉 当たり！ ${PRODUCTS[a].name} ×3\n+${prize}コイン`, 'win');
+      setMessage(`🎉 当たり！ ${PRODUCTS[a].name} ×3！ +${prize}コイン`, 'win');
       if (navigator.vibrate) navigator.vibrate([60,30,60]);
-      launchConfetti(60);
+      launchConfetti(70);
     }
   } else {
     setMessage('惜しい！もう一度チャレンジ！', 'lose');
+    if (navigator.vibrate) navigator.vibrate(20);
   }
 
-  spinning = false;
   updateCredits();
 
   if (credits <= 0) {
     setTimeout(() => {
-      setMessage('コインがなくなりました\nリセットします…', 'lose');
-      setTimeout(() => { credits = 10; won = 0; updateCredits(); setMessage('スピンしてください！'); }, 2500);
-    }, 1500);
+      setMessage('コインがなくなりました。リセットします…', 'lose');
+      setTimeout(() => {
+        credits = 10; won = 0; updateCredits();
+        setMessage('スピンしてください！', '');
+      }, 2500);
+    }, 1600);
   }
 }
 
-// ── Confetti ───────────────────────────────────────────────
+// ── Confetti ─────────────────────────────────────────────
 const canvas = document.getElementById('confetti');
 const ctx    = canvas.getContext('2d');
 let particles = [];
@@ -382,14 +550,14 @@ let particles = [];
 function launchConfetti(n) {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
-  const colors  = ['#f7c948','#ff8c42','#ff4e50','#43cfff','#a8ff78'];
+  const colors  = ['#e8c84a','#ff8c42','#ff4e50','#43cfff','#a8ff78','#ffffff'];
   for (let i = 0; i < n; i++) {
     particles.push({
       x: Math.random() * canvas.width, y: -10,
       vx: (Math.random() - 0.5) * 5,
       vy: Math.random() * 4 + 2,
       r:  Math.random() * 7 + 4,
-      color: colors[i % colors.length],
+      color: colors[Math.floor(Math.random() * colors.length)],
       rot: Math.random() * Math.PI * 2,
       spin: (Math.random() - 0.5) * 0.2
     });
@@ -405,7 +573,7 @@ function drawConfetti() {
     ctx.save();
     ctx.translate(p.x, p.y); ctx.rotate(p.rot);
     ctx.fillStyle = p.color;
-    ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.6);
+    ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.55);
     ctx.restore();
   }
   if (particles.length > 0) requestAnimationFrame(drawConfetti);
@@ -417,7 +585,7 @@ window.addEventListener('resize', () => {
   canvas.height = window.innerHeight;
 });
 
-// ── Init ───────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────
 for (let i = 0; i < 3; i++) { currentIdx[i] = rand(); showImage(i, currentIdx[i]); }
 updateCredits();
 </script>
