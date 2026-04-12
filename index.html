@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f3460">
+  <title>錦　櫂 ふりかけスロット</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      overscroll-behavior: none;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      color: #fff;
+      padding:
+        calc(16px + env(safe-area-inset-top))
+        calc(16px + env(safe-area-inset-right))
+        calc(16px + env(safe-area-inset-bottom))
+        calc(16px + env(safe-area-inset-left));
+    }
+
+    h1 {
+      font-size: clamp(1.3rem, 6vw, 2rem);
+      margin-bottom: 4px;
+      text-align: center;
+      background: linear-gradient(90deg, #f7c948, #ff8c42, #f7c948);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 8px rgba(247,201,72,0.4));
+      letter-spacing: 0.04em;
+    }
+
+    .subtitle {
+      font-size: clamp(0.72rem, 3vw, 0.85rem);
+      color: #aaa;
+      margin-bottom: clamp(16px, 4vw, 30px);
+      text-align: center;
+    }
+
+    .machine {
+      width: min(520px, calc(100vw - 32px));
+      background: linear-gradient(160deg, #2d2d2d, #1a1a1a);
+      border-radius: 24px;
+      padding: clamp(16px, 4vw, 30px) clamp(14px, 4vw, 28px) clamp(20px, 5vw, 28px);
+      box-shadow:
+        0 0 0 4px #f7c948,
+        0 0 0 8px #1a1a1a,
+        0 20px 60px rgba(0,0,0,0.7);
+    }
+
+    .machine::before {
+      content: '🎰 NISIKI-KAI SLOT 🎰';
+      display: block;
+      text-align: center;
+      font-size: clamp(0.65rem, 2.8vw, 0.8rem);
+      letter-spacing: 0.12em;
+      color: #f7c948;
+      margin-bottom: clamp(12px, 3vw, 18px);
+      font-weight: bold;
+    }
+
+    .reels {
+      display: flex;
+      gap: clamp(8px, 2.5vw, 12px);
+      margin-bottom: clamp(14px, 4vw, 20px);
+    }
+
+    .reel-wrapper {
+      flex: 1;
+      aspect-ratio: 1;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 3px solid #444;
+      background: #111;
+      position: relative;
+      box-shadow: inset 0 0 16px rgba(0,0,0,0.6);
+    }
+
+    .reel-wrapper::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg,
+        rgba(0,0,0,0.35) 0%,
+        transparent 25%,
+        transparent 75%,
+        rgba(0,0,0,0.35) 100%
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .reel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .reel img {
+      width: 85%;
+      height: 85%;
+      object-fit: contain;
+      border-radius: 8px;
+      user-select: none;
+      pointer-events: none;
+      display: block;
+    }
+
+    .reel.spinning {
+      animation: spinBlur 0.08s linear infinite;
+    }
+
+    @keyframes spinBlur {
+      0%   { filter: blur(0px);  transform: scaleY(1);    }
+      25%  { filter: blur(3px);  transform: scaleY(0.96); }
+      50%  { filter: blur(5px);  transform: scaleY(0.92); }
+      75%  { filter: blur(3px);  transform: scaleY(0.96); }
+      100% { filter: blur(0px);  transform: scaleY(1);    }
+    }
+
+    .reel.stopping {
+      animation: stopBounce 0.4s cubic-bezier(.36,.07,.19,.97) forwards;
+    }
+
+    @keyframes stopBounce {
+      0%   { transform: scaleY(0.92); filter: blur(3px); }
+      60%  { transform: scaleY(1.06); filter: blur(0);   }
+      80%  { transform: scaleY(0.97); }
+      100% { transform: scaleY(1);    filter: blur(0);   }
+    }
+
+    .reel-wrapper.winner {
+      border-color: #f7c948;
+      animation: winPulse 0.6s ease-in-out infinite alternate;
+    }
+
+    @keyframes winPulse {
+      from { box-shadow: inset 0 0 10px rgba(247,201,72,0.2), 0 0 10px rgba(247,201,72,0.4); }
+      to   { box-shadow: inset 0 0 30px rgba(247,201,72,0.5), 0 0 40px rgba(247,201,72,0.9); }
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(10px, 3vw, 14px);
+    }
+
+    .credits-row {
+      display: flex;
+      gap: clamp(16px, 5vw, 24px);
+      font-size: clamp(0.78rem, 3.2vw, 0.9rem);
+      color: #ccc;
+    }
+
+    .credits-row span strong {
+      color: #f7c948;
+      font-size: clamp(0.95rem, 4vw, 1.15rem);
+    }
+
+    .message {
+      min-height: 2.4em;
+      font-size: clamp(0.78rem, 3.4vw, 1rem);
+      font-weight: bold;
+      text-align: center;
+      line-height: 1.3;
+      letter-spacing: 0.03em;
+      padding: 0 4px;
+    }
+
+    .message.win    { color: #f7c948; text-shadow: 0 0 12px rgba(247,201,72,0.8); }
+    .message.lose   { color: #888; }
+    .message.jackpot {
+      color: #ff4e50;
+      animation: jackpotFlash 0.4s linear infinite alternate;
+    }
+
+    @keyframes jackpotFlash {
+      from { text-shadow: 0 0 8px rgba(255,78,80,0.6); }
+      to   { text-shadow: 0 0 24px rgba(255,78,80,1), 0 0 40px rgba(255,200,0,0.8); }
+    }
+
+    .spin-btn {
+      width: min(260px, 80vw);
+      height: clamp(52px, 14vw, 60px);
+      border: none;
+      border-radius: 32px;
+      background: linear-gradient(135deg, #f7c948, #ff8c42);
+      color: #1a1a1a;
+      font-size: clamp(1rem, 4.5vw, 1.25rem);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 4px 20px rgba(247,201,72,0.5), 0 2px 0 rgba(0,0,0,0.3);
+      transition: transform 0.1s, box-shadow 0.1s;
+      position: relative;
+      overflow: hidden;
+      -webkit-appearance: none;
+      user-select: none;
+    }
+
+    .spin-btn:active:not(:disabled) {
+      transform: scale(0.95) translateY(2px);
+      box-shadow: 0 2px 8px rgba(247,201,72,0.3);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* Confetti */
+    #confetti {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<h1>錦　櫂 ふりかけスロット</h1>
+<p class="subtitle">全リール揃ったら当たり！</p>
+
+<div class="machine">
+  <div class="reels">
+    <div class="reel-wrapper" id="w0">
+      <div class="reel" id="r0"><img id="img0" src="" alt=""></div>
+    </div>
+    <div class="reel-wrapper" id="w1">
+      <div class="reel" id="r1"><img id="img1" src="" alt=""></div>
+    </div>
+    <div class="reel-wrapper" id="w2">
+      <div class="reel" id="r2"><img id="img2" src="" alt=""></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="credits-row">
+      <span>コイン: <strong id="credits">10</strong></span>
+      <span>獲得: <strong id="won">0</strong></span>
+    </div>
+    <div class="message" id="message">スピンしてください！</div>
+    <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN ▶</button>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  { name: 'えび・ほたてふりかけ', img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004733_VDwqeb4.jpg' },
+  { name: 'しらすふりかけ',       img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004853_8eUzcFV.jpg' },
+  { name: '小魚せんべい',         img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004773_cji1nw0.jpg' },
+  { name: '梅しそふりかけ',       img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000001473_baRZatM.jpg' },
+  { name: '海苔・小魚ふりかけ',   img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004283_goJQiNk.jpg' },
+  { name: '錦　櫂ギフトセット',   img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004783_pkdF5lg.jpg' }
+];
+
+let credits = 10, won = 0, spinning = false;
+let spinIntervals = [], currentIdx = [0,0,0], finalIdx = [0,0,0];
+
+function rand() { return Math.floor(Math.random() * PRODUCTS.length); }
+
+function showImage(i, idx) {
+  const img = document.getElementById('img' + i);
+  img.src = PRODUCTS[idx].img;
+  img.alt = PRODUCTS[idx].name;
+}
+
+function updateCredits() {
+  document.getElementById('credits').textContent = credits;
+  document.getElementById('won').textContent = won;
+  document.getElementById('spinBtn').disabled = credits <= 0 || spinning;
+}
+
+function setMessage(text, cls = '') {
+  const el = document.getElementById('message');
+  el.textContent = text;
+  el.className = 'message ' + cls;
+}
+
+function spin() {
+  if (spinning || credits <= 0) return;
+  spinning = true;
+  credits--;
+  updateCredits();
+  setMessage('スピン中...', '');
+
+  // Vibrate on spin (supported on Android Chrome)
+  if (navigator.vibrate) navigator.vibrate(30);
+
+  for (let i = 0; i < 3; i++) {
+    document.getElementById('w' + i).classList.remove('winner');
+    finalIdx[i] = rand();
+  }
+
+  for (let i = 0; i < 3; i++) {
+    document.getElementById('r' + i).classList.add('spinning');
+    let c = currentIdx[i];
+    spinIntervals[i] = setInterval(() => {
+      c = (c + 1) % PRODUCTS.length;
+      showImage(i, c);
+    }, 80);
+  }
+
+  [1200, 1900, 2600].forEach((delay, i) => setTimeout(() => stopReel(i), delay));
+}
+
+function stopReel(i) {
+  clearInterval(spinIntervals[i]);
+  showImage(i, finalIdx[i]);
+  currentIdx[i] = finalIdx[i];
+
+  if (navigator.vibrate) navigator.vibrate(40);
+
+  const reel = document.getElementById('r' + i);
+  reel.classList.remove('spinning');
+  reel.classList.add('stopping');
+  reel.addEventListener('animationend', () => reel.classList.remove('stopping'), { once: true });
+
+  if (i === 2) setTimeout(checkResult, 500);
+}
+
+function checkResult() {
+  const [a, b, c] = finalIdx;
+  const isWin     = a === b && b === c;
+  const isJackpot = isWin && a === 5;
+
+  if (isWin) {
+    const prize = isJackpot ? 30 : 10;
+    credits += prize; won += prize;
+    for (let i = 0; i < 3; i++) document.getElementById('w' + i).classList.add('winner');
+    if (isJackpot) {
+      setMessage('🎊 JACKPOT！ ギフトセット当選！\n+30コイン', 'jackpot');
+      if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+      launchConfetti(150);
+    } else {
+      setMessage(`🎉 当たり！ ${PRODUCTS[a].name} ×3\n+${prize}コイン`, 'win');
+      if (navigator.vibrate) navigator.vibrate([60,30,60]);
+      launchConfetti(60);
+    }
+  } else {
+    setMessage('惜しい！もう一度チャレンジ！', 'lose');
+  }
+
+  spinning = false;
+  updateCredits();
+
+  if (credits <= 0) {
+    setTimeout(() => {
+      setMessage('コインがなくなりました\nリセットします…', 'lose');
+      setTimeout(() => { credits = 10; won = 0; updateCredits(); setMessage('スピンしてください！'); }, 2500);
+    }, 1500);
+  }
+}
+
+// ── Confetti ───────────────────────────────────────────────
+const canvas = document.getElementById('confetti');
+const ctx    = canvas.getContext('2d');
+let particles = [];
+
+function launchConfetti(n) {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors  = ['#f7c948','#ff8c42','#ff4e50','#43cfff','#a8ff78'];
+  for (let i = 0; i < n; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: -10,
+      vx: (Math.random() - 0.5) * 5,
+      vy: Math.random() * 4 + 2,
+      r:  Math.random() * 7 + 4,
+      color: colors[i % colors.length],
+      rot: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.2
+    });
+  }
+  requestAnimationFrame(drawConfetti);
+}
+
+function drawConfetti() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles = particles.filter(p => p.y < canvas.height + 20);
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rot += p.spin;
+    ctx.save();
+    ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.6);
+    ctx.restore();
+  }
+  if (particles.length > 0) requestAnimationFrame(drawConfetti);
+  else ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+window.addEventListener('resize', () => {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// ── Init ───────────────────────────────────────────────────
+for (let i = 0; i < 3; i++) { currentIdx[i] = rand(); showImage(i, currentIdx[i]); }
+updateCredits();
+</script>
+</body>
+</html>
