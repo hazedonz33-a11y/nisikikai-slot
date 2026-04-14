@@ -44,9 +44,15 @@
       box-shadow: 0 0 0 3px #e8c84a, 0 0 0 6px #fff, 0 16px 48px rgba(0,0,0,0.12);
       transition: box-shadow 0.3s;
     }
+    /* リーチ中: マシンは控えめな呼吸グロー（シェイクなし） */
     .machine.reach-active {
-      animation: machineShake 0.14s ease-in-out infinite, rainbowBorder 0.5s linear infinite;
+      animation: reachMachinePulse 0.8s ease-in-out infinite alternate;
     }
+    @keyframes reachMachinePulse {
+      from { box-shadow: 0 0 0 3px #e8c84a, 0 0 0 6px #fff, 0 16px 48px rgba(0,0,0,0.12); }
+      to   { box-shadow: 0 0 0 4px #ff8c42, 0 0 40px rgba(255,140,66,0.35), 0 16px 60px rgba(255,78,80,0.12); }
+    }
+    /* 当たり/JACKPOT用 (既存維持) */
     @keyframes machineShake {
       0%,100% { transform: translateX(0) rotate(0deg); }
       15%     { transform: translateX(-7px) rotate(-0.6deg); }
@@ -99,26 +105,24 @@
       pointer-events: none; z-index: 2;
     }
 
-    /* Reach: matched reel intense glow + spinning border ring */
-    .reel-wrapper.reach-match {
+    /* リーチ: 最後のリールだけ光る (虹色スピンボーダー) */
+    .reel-wrapper.reach-last {
       border-color: transparent !important;
-      animation: reachMatchGlow 0.18s ease-in-out infinite alternate;
       overflow: visible;
+      animation: reachLastGlow 0.22s ease-in-out infinite alternate;
     }
-    .reel-wrapper.reach-match::before {
+    .reel-wrapper.reach-last::before {
       content: '';
       position: absolute;
-      inset: -4px;
-      border-radius: 18px;
-      background: conic-gradient(#ff4e50, #ff8c42, #ffe066, #a8ff78, #43cfff, #ff4e50);
-      animation: spinBorder 0.6s linear infinite;
+      inset: -5px; border-radius: 20px;
+      background: conic-gradient(#ff4e50, #ff8c42, #ffe066, #ff8c42, #ff4e50);
+      animation: spinBorder 0.7s linear infinite;
       z-index: 0;
     }
-    .reel-wrapper.reach-match::after {
+    .reel-wrapper.reach-last::after {
       content: '';
       position: absolute;
-      inset: 3px;
-      border-radius: 14px;
+      inset: 3px; border-radius: 14px;
       background: #fafafa;
       z-index: 1;
     }
@@ -126,9 +130,21 @@
       from { transform: rotate(0deg); }
       to   { transform: rotate(360deg); }
     }
-    @keyframes reachMatchGlow {
-      from { box-shadow: 0 0 15px rgba(255,78,80,0.7),  0 0 30px rgba(255,78,80,0.3); }
-      to   { box-shadow: 0 0 50px rgba(255,78,80,1),    0 0 90px rgba(255,140,66,0.6), 0 0 130px rgba(255,224,102,0.3); }
+    @keyframes reachLastGlow {
+      from { box-shadow: 0 0 18px rgba(255,78,80,0.7), 0 0 35px rgba(255,140,66,0.3); }
+      to   { box-shadow: 0 0 55px rgba(255,78,80,1),   0 0 100px rgba(255,140,66,0.65), 0 0 140px rgba(255,224,102,0.3); }
+    }
+
+    /* リーチ: ゆっくり回転アニメーション */
+    .reel.reach-spin {
+      animation: reachSlowSpin 0.55s ease-in-out infinite;
+    }
+    @keyframes reachSlowSpin {
+      0%   { filter: blur(0px);  transform: scaleY(1);    }
+      30%  { filter: blur(1.5px);transform: scaleY(0.96); }
+      55%  { filter: blur(3px);  transform: scaleY(0.93); }
+      80%  { filter: blur(1.5px);transform: scaleY(0.96); }
+      100% { filter: blur(0px);  transform: scaleY(1);    }
     }
 
     /* Winner glow */
@@ -708,6 +724,8 @@ function updateHint() {
 }
 
 // ── REACH!! gimmick ─────────────────────────────────────
+const REACH_DURATION = 7000; // 7秒
+
 function triggerChanceGimmick(reelIdx) {
   gameState = 'gimmick';
   clearInterval(spinIntervals[reelIdx]);
@@ -716,72 +734,52 @@ function triggerChanceGimmick(reelIdx) {
 
   for (let i = 0; i < 3; i++) setStopBtn(i, false);
 
-  const matchedReels = stoppedOrder.slice(0, 2);
-  const matchIdx     = finalIdx[matchedReels[0]];
   const w = document.getElementById('w' + reelIdx);
   const r = document.getElementById('r' + reelIdx);
   r.classList.remove('spinning');
 
-  // Show match image + slow pulse on last reel
-  showImage(reelIdx, matchIdx);
-  r.classList.add('reach-pulse');
+  // 最後のリールだけ光る
+  w.classList.add('reach-last');
 
-  // Matched reels: spinning rainbow border
-  matchedReels.forEach(i => document.getElementById('w' + i).classList.add('reach-match'));
+  // ゆっくり回転開始（250ms間隔）
+  let c = currentIdx[reelIdx];
+  const slowInterval = setInterval(() => {
+    c = (c + 1) % PRODUCTS.length;
+    showImage(reelIdx, c);
+  }, 250);
+  r.classList.add('reach-spin');
 
-  // Machine shake + rainbow border
+  // マシンは控えめなグロー
   document.getElementById('machine').classList.add('reach-active');
 
   setHint('');
   setMessage('🔥🔥 REACH！！ 揃うか！？ 🔥🔥', 'jackpot');
 
-  // ── Flash & star sequence ─────────────────────────────
-  const flashSeq = [
-    [0,    '#ff8c42'],
-    [180,  '#ffffff'],
-    [360,  '#ff4e50'],
-    [540,  '#ffe066'],
-    [900,  '#ff8c42'],
-    [1200, '#ffffff'],
-    [1600, '#ff4e50'],
-    [2000, '#ffe066'],
-    [2400, '#ff8c42'],
-    [2800, '#ffffff'],
-    [3000, '#ff4e50'],
-  ];
-  flashSeq.forEach(([delay, color]) =>
-    setTimeout(() => triggerFlash(color), delay)
-  );
+  // REACH オーバーレイ
+  setTimeout(() => showReach(), 150);
 
-  // REACH overlay appears at t=120ms
-  setTimeout(() => showReach(), 120);
+  // フラッシュ: 最初の盛り上がり部分のみ(0〜1.5秒)
+  [[0,'#ff8c42'],[220,'#fff'],[440,'#ff4e50'],[700,'#ffe066'],[1000,'#fff'],[1400,'#ff8c42']]
+    .forEach(([t,c]) => setTimeout(() => triggerFlash(c), t));
 
-  // Stars burst repeatedly
-  const starBursts = [300, 800, 1400, 2000, 2600];
-  starBursts.forEach(t =>
-    setTimeout(() => burstStars(matchedReels), t)
-  );
+  // 最後のリールだけ星を定期的に飛ばす
+  const starTimes = [400, 1200, 2200, 3400, 4600, 5800];
+  starTimes.forEach(t => setTimeout(() => burstStars([reelIdx]), t));
 
-  // Vibration pattern
-  if (navigator.vibrate) navigator.vibrate([
-    80,40, 80,40, 120,60, 80,40, 80,40,
-    200,80, 100,40, 100,40, 200
-  ]);
+  // バイブ
+  if (navigator.vibrate) navigator.vibrate([80,40,80,40,120,60,80,40,80]);
+
+  // ── 7秒後に解決 ─────────────────────────────────────
   setTimeout(() => {
-    if (navigator.vibrate) navigator.vibrate([80,40,80,40,200,80,200]);
-  }, 1800);
-
-  // ── Resolve at t=3400ms ───────────────────────────────
-  setTimeout(() => {
+    clearInterval(slowInterval);
     hideReach();
     document.getElementById('machine').classList.remove('reach-active');
-    matchedReels.forEach(i => document.getElementById('w' + i).classList.remove('reach-match'));
-    r.classList.remove('reach-pulse');
+    w.classList.remove('reach-last');
+    r.classList.remove('reach-spin');
 
     showImage(reelIdx, finalIdx[reelIdx]);
     currentIdx[reelIdx] = finalIdx[reelIdx];
 
-    // Final flash on reveal
     triggerFlash('#ffffff');
     r.classList.add('stopping');
     r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
@@ -790,7 +788,7 @@ function triggerChanceGimmick(reelIdx) {
       gameState = 'spinning';
       checkResult();
     }, 460);
-  }, 3400);
+  }, REACH_DURATION);
 }
 
 // ── Win sequence ─────────────────────────────────────────
