@@ -375,8 +375,19 @@ function spin() {
 
   if (navigator.vibrate) navigator.vibrate(25);
 
+  // 50% win rate: half the time force all 3 reels to match
+  if (Math.random() < 0.5) {
+    const sym = rand();
+    finalIdx = [sym, sym, sym];
+  } else {
+    for (let i = 0; i < 3; i++) finalIdx[i] = rand();
+    // Prevent accidental win in the lose path
+    if (finalIdx[0] === finalIdx[1] && finalIdx[1] === finalIdx[2]) {
+      finalIdx[2] = (finalIdx[2] + 1 + Math.floor(Math.random() * (PRODUCTS.length - 1))) % PRODUCTS.length;
+    }
+  }
+
   for (let i = 0; i < 3; i++) {
-    finalIdx[i] = rand();
     const w = document.getElementById('w' + i);
     w.classList.remove('winner', 'chance-glow');
     w.classList.add('can-stop');
