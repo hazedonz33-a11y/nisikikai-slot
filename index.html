@@ -348,6 +348,122 @@
       100% { opacity: 0; }
     }
 
+    /* ── Win overlay ── */
+    #win-overlay {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none; z-index: 70;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    #win-overlay.show { opacity: 1; }
+
+    #win-bg {
+      position: absolute; inset: 0;
+      animation: winBgPulse 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes winBgPulse {
+      from { background: rgba(20,10,0,0.65); }
+      to   { background: rgba(55,30,0,0.78); }
+    }
+    #win-overlay.jackpot #win-bg {
+      animation: jpBgPulse 0.4s ease-in-out infinite alternate;
+    }
+    @keyframes jpBgPulse {
+      from { background: rgba(0,0,30,0.72); }
+      to   { background: rgba(35,0,50,0.82); }
+    }
+
+    #win-title {
+      position: relative; z-index: 2;
+      font-size: clamp(3rem, 17vw, 8rem);
+      font-weight: 900; letter-spacing: 0.08em;
+      transform: scale(0.15) rotate(-10deg);
+      transition: transform 0.45s cubic-bezier(0.34, 1.8, 0.64, 1);
+    }
+    #win-overlay.show #win-title {
+      transform: scale(1) rotate(-2deg);
+      animation: winTitleBounce 0.5s ease-in-out infinite alternate,
+                 winTitleColor  0.7s linear infinite;
+    }
+    @keyframes winTitleBounce {
+      from { transform: scale(1)   rotate(-2deg); }
+      to   { transform: scale(1.1) rotate(2deg);  }
+    }
+    @keyframes winTitleColor {
+      0%   { color:#ffe066; text-shadow:0 0 28px #e8c84a,0 0 70px #e8c84a,0 0 110px rgba(232,200,74,0.4); }
+      33%  { color:#fff;    text-shadow:0 0 30px #fff,   0 0 70px rgba(255,255,255,0.5); }
+      66%  { color:#ff8c42; text-shadow:0 0 28px #ff8c42,0 0 70px rgba(255,140,66,0.5); }
+      100% { color:#ffe066; text-shadow:0 0 28px #e8c84a,0 0 70px #e8c84a,0 0 110px rgba(232,200,74,0.4); }
+    }
+    #win-overlay.jackpot #win-title {
+      animation: winTitleBounce 0.45s ease-in-out infinite alternate,
+                 jpTitleColor   0.55s linear infinite !important;
+    }
+    @keyframes jpTitleColor {
+      0%   { color:#ffe066; text-shadow:0 0 35px #e8c84a,0 0 80px #e8c84a; }
+      20%  { color:#ff8c42; text-shadow:0 0 35px #ff8c42,0 0 80px #ff8c42; }
+      40%  { color:#ff4e50; text-shadow:0 0 35px #ff4e50,0 0 80px #ff4e50; }
+      60%  { color:#a8ff78; text-shadow:0 0 35px #a8ff78,0 0 80px rgba(168,255,120,0.7); }
+      80%  { color:#43cfff; text-shadow:0 0 35px #43cfff,0 0 80px rgba(67,207,255,0.7); }
+      100% { color:#ffe066; text-shadow:0 0 35px #e8c84a,0 0 80px #e8c84a; }
+    }
+
+    #win-product {
+      position: relative; z-index: 2;
+      font-size: clamp(0.85rem, 3.8vw, 1.35rem);
+      color: #fff; font-weight: 700; letter-spacing: 0.08em;
+      text-align: center; padding: 0 16px; margin-top: 10px;
+      opacity: 0; transform: translateY(14px);
+      transition: opacity 0.35s 0.28s, transform 0.35s 0.28s;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    #win-overlay.show #win-product { opacity: 1; transform: translateY(0); }
+
+    #win-prize {
+      position: relative; z-index: 2;
+      font-size: clamp(1.6rem, 8vw, 3rem);
+      font-weight: 900; letter-spacing: 0.06em;
+      color: #ffe066;
+      text-shadow: 0 0 20px rgba(255,224,102,0.8), 0 3px 0 rgba(0,0,0,0.4);
+      margin-top: 14px;
+      opacity: 0; transform: scale(0.3);
+      transition: opacity 0.4s 0.42s, transform 0.4s 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #win-overlay.show #win-prize {
+      opacity: 1; transform: scale(1);
+      animation: prizePulse 0.55s ease-in-out infinite alternate;
+    }
+    @keyframes prizePulse {
+      from { filter:brightness(1);   text-shadow:0 0 15px rgba(255,224,102,0.6); }
+      to   { filter:brightness(1.45);text-shadow:0 0 40px rgba(255,224,102,1),0 0 80px rgba(255,140,66,0.4); }
+    }
+
+    /* Machine win glow */
+    .machine.win-active {
+      animation: winMachinePulse 0.45s ease-in-out infinite alternate;
+    }
+    @keyframes winMachinePulse {
+      from { box-shadow:0 0 0 3px #e8c84a,0 0 20px rgba(232,200,74,0.3),0 16px 48px rgba(0,0,0,0.12); }
+      to   { box-shadow:0 0 0 7px #e8c84a,0 0 70px rgba(232,200,74,0.8),0 16px 60px rgba(232,200,74,0.2); }
+    }
+    .machine.jackpot-active {
+      animation: machineShake 0.13s ease-in-out infinite, rainbowBorder 0.38s linear infinite;
+    }
+
+    /* Falling coins */
+    .coin {
+      position: fixed; top: -50px;
+      font-size: clamp(1.4rem, 5vw, 2.4rem);
+      pointer-events: none; z-index: 101;
+      animation: coinFall var(--dur, 1.5s) cubic-bezier(0.2,0,0.8,1) forwards;
+    }
+    @keyframes coinFall {
+      0%   { opacity:1; transform:translateY(0)              rotate(0deg)   scale(1);   }
+      80%  { opacity:1; }
+      100% { opacity:0; transform:translateY(var(--dy,600px)) rotate(420deg) scale(0.75); }
+    }
+
     /* Confetti */
     #confetti {
       position: fixed; top: 0; left: 0;
@@ -359,11 +475,20 @@
 <body>
 
 <canvas id="confetti"></canvas>
+
 <div id="reach-overlay">
   <div id="reach-bg"></div>
   <div id="reach-text">REACH!!</div>
   <div id="reach-sub">揃うか！？</div>
 </div>
+
+<div id="win-overlay">
+  <div id="win-bg"></div>
+  <div id="win-title"></div>
+  <div id="win-product"></div>
+  <div id="win-prize"></div>
+</div>
+
 <div id="flash"></div>
 
 <h1>錦　櫂 ふりかけスロット</h1>
@@ -668,6 +793,86 @@ function triggerChanceGimmick(reelIdx) {
   }, 3400);
 }
 
+// ── Win sequence ─────────────────────────────────────────
+function triggerWinSequence(isJackpot, prize, productName) {
+  for (let i = 0; i < 3; i++) document.getElementById('w' + i).classList.add('winner');
+  const machine = document.getElementById('machine');
+  machine.classList.add(isJackpot ? 'jackpot-active' : 'win-active');
+
+  // Overlay content
+  const overlay = document.getElementById('win-overlay');
+  document.getElementById('win-title').textContent   = isJackpot ? 'JACKPOT!!' : '当たり！！';
+  document.getElementById('win-product').textContent = productName + ' × 3';
+  document.getElementById('win-prize').textContent   = '+' + prize + 'コイン';
+  if (isJackpot) overlay.classList.add('jackpot');
+
+  // Flash sequence
+  const flashColors = isJackpot
+    ? ['#ffe066','#fff','#ff4e50','#ffe066','#43cfff','#fff','#ff8c42','#ffe066','#fff','#ff4e50','#a8ff78','#fff']
+    : ['#ffe066','#fff','#e8c84a','#fff','#ffe066','#fff'];
+  flashColors.forEach((c, i) => setTimeout(() => triggerFlash(c), i * (isJackpot ? 220 : 300)));
+
+  // Show overlay
+  setTimeout(() => overlay.classList.add('show'), 130);
+
+  // Stars burst from all 3 reels
+  const starTimes = isJackpot ? [200,500,900,1300,1800,2400,3100,3700] : [200,600,1200,1900];
+  starTimes.forEach(t => setTimeout(() => burstStars([0,1,2]), t));
+
+  // Coins fall
+  spawnCoins(isJackpot ? 22 : 10);
+  if (isJackpot) {
+    setTimeout(() => spawnCoins(18), 900);
+    setTimeout(() => spawnCoins(14), 2000);
+  }
+
+  // Confetti
+  setTimeout(() => launchConfetti(isJackpot ? 280 : 110), 250);
+  if (isJackpot) {
+    setTimeout(() => launchConfetti(180), 1600);
+    setTimeout(() => launchConfetti(120), 3000);
+  }
+
+  // Vibration
+  if (navigator.vibrate) {
+    if (isJackpot) {
+      navigator.vibrate([100,40,100,40,160,50,100,40,100,40,300,80,200,80,200]);
+      setTimeout(() => navigator.vibrate([100,40,100,40,200,80,300,80,300]), 1600);
+    } else {
+      navigator.vibrate([80,40,80,40,120,60,80,40,200]);
+    }
+  }
+
+  // After overlay → show text message & reset machine style
+  const duration = isJackpot ? 5000 : 3200;
+  setTimeout(() => {
+    overlay.classList.remove('show', 'jackpot');
+    machine.classList.remove('win-active', 'jackpot-active');
+    if (isJackpot) {
+      setMessage('🎊 JACKPOT！ ギフトセット当選！ +30コイン', 'jackpot');
+    } else {
+      setMessage(`🎉 当たり！ ${productName} ×3！ +${prize}コイン`, 'win');
+    }
+  }, duration);
+}
+
+function spawnCoins(n) {
+  for (let i = 0; i < n; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'coin';
+      el.textContent = '🪙';
+      el.style.left = (8 + Math.random() * 84) + 'vw';
+      const dur = (1.2 + Math.random() * 1.3).toFixed(2) + 's';
+      const dy  = Math.round(window.innerHeight * (0.55 + Math.random() * 0.45)) + 'px';
+      el.style.setProperty('--dur', dur);
+      el.style.setProperty('--dy',  dy);
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }, i * 90);
+  }
+}
+
 // ── Check result ─────────────────────────────────────────
 function checkResult() {
   const [a, b, c] = finalIdx;
@@ -677,21 +882,11 @@ function checkResult() {
   gameState = 'idle';
   reelState = ['idle','idle','idle'];
   setHint('SPIN を押してスタート');
-  updateCredits();
 
   if (isWin) {
     const prize = isJackpot ? 30 : 10;
     credits += prize; won += prize;
-    for (let i = 0; i < 3; i++) document.getElementById('w' + i).classList.add('winner');
-    if (isJackpot) {
-      setMessage('🎊 JACKPOT！ ギフトセット当選！ +30コイン', 'jackpot');
-      if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
-      launchConfetti(180);
-    } else {
-      setMessage(`🎉 当たり！ ${PRODUCTS[a].name} ×3！ +${prize}コイン`, 'win');
-      if (navigator.vibrate) navigator.vibrate([60,30,60]);
-      launchConfetti(80);
-    }
+    triggerWinSequence(isJackpot, prize, PRODUCTS[a].name);
   } else {
     setMessage('惜しい！もう一度チャレンジ！', 'lose');
     if (navigator.vibrate) navigator.vibrate(20);
@@ -706,7 +901,7 @@ function checkResult() {
         credits = 10; won = 0; updateCredits();
         setMessage('スピンしてください！', '');
       }, 2500);
-    }, 1600);
+    }, isWin ? 6000 : 1600);
   }
 }
 
