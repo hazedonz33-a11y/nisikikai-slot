@@ -9,17 +9,13 @@
   <title>錦　櫂 ふりかけスロット</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
     html, body { height: 100%; overscroll-behavior: none; }
 
     body {
-      min-height: 100vh;
-      min-height: 100dvh;
+      min-height: 100vh; min-height: 100dvh;
       background: #f0ede8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
       color: #1a1a1a;
       padding:
@@ -31,159 +27,79 @@
 
     h1 {
       font-size: clamp(1.4rem, 6vw, 2.2rem);
-      font-weight: 900;
-      letter-spacing: 0.1em;
-      text-align: center;
-      color: #1a1a1a;
-      margin-bottom: 4px;
+      font-weight: 900; letter-spacing: 0.1em;
+      text-align: center; color: #1a1a1a; margin-bottom: 4px;
     }
-
     .subtitle {
       font-size: clamp(0.72rem, 3vw, 0.85rem);
-      color: #999;
-      text-align: center;
+      color: #999; text-align: center;
       margin-bottom: clamp(14px, 4vw, 26px);
     }
 
     /* ── Machine ── */
     .machine {
       width: min(520px, calc(100vw - 32px));
-      background: #ffffff;
-      border-radius: 28px;
-      padding: clamp(16px, 4vw, 28px) clamp(14px, 4vw, 24px) clamp(18px, 5vw, 28px);
-      box-shadow:
-        0 0 0 3px #e8c84a,
-        0 0 0 6px #ffffff,
-        0 16px 48px rgba(0,0,0,0.12);
+      background: #fff; border-radius: 28px;
+      padding: clamp(14px,4vw,26px) clamp(12px,4vw,22px) clamp(16px,5vw,26px);
+      box-shadow: 0 0 0 3px #e8c84a, 0 0 0 6px #fff, 0 16px 48px rgba(0,0,0,0.12);
+      transition: box-shadow 0.3s;
+    }
+    .machine.reach-active {
+      animation: machineShake 0.18s ease-in-out infinite;
+      box-shadow: 0 0 0 4px #ff4e50, 0 0 0 8px rgba(255,78,80,0.3), 0 16px 60px rgba(255,78,80,0.2);
+    }
+    @keyframes machineShake {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-5px) rotate(-0.4deg); }
+      40%     { transform: translateX(5px)  rotate(0.4deg);  }
+      60%     { transform: translateX(-4px); }
+      80%     { transform: translateX(4px);  }
     }
 
     .machine-header {
       text-align: center;
       font-size: clamp(0.62rem, 2.6vw, 0.76rem);
-      letter-spacing: 0.18em;
-      color: #c8a830;
-      font-weight: 700;
-      margin-bottom: clamp(10px, 3vw, 16px);
+      letter-spacing: 0.18em; color: #c8a830; font-weight: 700;
+      margin-bottom: clamp(10px, 3vw, 14px);
     }
 
-    /* ── Reels ── */
+    /* ── Reel columns ── */
     .reels {
       display: flex;
       gap: clamp(8px, 2.5vw, 12px);
-      margin-bottom: 8px;
+      margin-bottom: clamp(6px, 2vw, 10px);
     }
-
-    .reel-wrapper {
+    .reel-col {
       flex: 1;
-      aspect-ratio: 1;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 2px solid #e8e8e8;
-      background: #fafafa;
-      position: relative;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+      display: flex; flex-direction: column;
+      align-items: stretch; gap: 6px;
     }
 
-    /* Sheen overlay */
+    /* ── Reel wrapper ── */
+    .reel-wrapper {
+      aspect-ratio: 1;
+      border-radius: 16px; overflow: hidden;
+      border: 2px solid #e8e8e8;
+      background: #fafafa; position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
     .reel-wrapper::after {
       content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(160deg, rgba(255,255,255,0.4) 0%, transparent 45%, transparent 55%, rgba(255,255,255,0.15) 100%);
-      pointer-events: none;
-      z-index: 2;
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg,
+        rgba(255,255,255,0.4) 0%, transparent 45%,
+        transparent 55%, rgba(255,255,255,0.15) 100%);
+      pointer-events: none; z-index: 2;
     }
 
-    /* Tappable state */
-    .reel-wrapper.can-stop {
-      cursor: pointer;
-      border-color: #e8c84a;
-      box-shadow: 0 0 0 3px rgba(232,200,74,0.25);
+    /* Reach: matched reel intense glow */
+    .reel-wrapper.reach-match {
+      border-color: #ff4e50 !important;
+      animation: reachMatchGlow 0.18s ease-in-out infinite alternate;
     }
-    .reel-wrapper.can-stop:active { transform: scale(0.95); }
-
-    /* STOP label */
-    .stop-label {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 3;
-      pointer-events: none;
-    }
-    .stop-label span {
-      font-size: clamp(0.7rem, 3vw, 0.9rem);
-      font-weight: 900;
-      letter-spacing: 0.1em;
-      color: transparent;
-      background: transparent;
-      padding: 4px 10px;
-      border-radius: 20px;
-      transition: color 0.15s, background 0.15s;
-    }
-    .reel-wrapper.can-stop .stop-label span {
-      color: #fff;
-      background: rgba(0,0,0,0.28);
-    }
-
-    /* Reel image */
-    .reel {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .reel img {
-      width: 82%;
-      height: 82%;
-      object-fit: contain;
-      border-radius: 8px;
-      user-select: none;
-      pointer-events: none;
-      display: block;
-    }
-
-    /* Spin animation */
-    .reel.spinning { animation: spinBlur 0.08s linear infinite; }
-    @keyframes spinBlur {
-      0%   { filter: blur(0px);  transform: scaleY(1);    }
-      25%  { filter: blur(3px);  transform: scaleY(0.96); }
-      50%  { filter: blur(6px);  transform: scaleY(0.91); }
-      75%  { filter: blur(3px);  transform: scaleY(0.96); }
-      100% { filter: blur(0px);  transform: scaleY(1);    }
-    }
-
-    /* Stop bounce */
-    .reel.stopping {
-      animation: stopBounce 0.38s cubic-bezier(.36,.07,.19,.97) forwards;
-    }
-    @keyframes stopBounce {
-      0%   { transform: scaleY(0.91); filter: blur(3px); }
-      55%  { transform: scaleY(1.07); filter: blur(0);   }
-      78%  { transform: scaleY(0.97); }
-      100% { transform: scaleY(1);    }
-    }
-
-    /* Chance gimmick – wrapper flash */
-    .reel-wrapper.chance-glow {
-      border-color: #ff8c42 !important;
-      animation: chanceGlow 0.28s ease-in-out infinite alternate;
-    }
-    @keyframes chanceGlow {
-      from { box-shadow: 0 0 6px rgba(255,140,66,0.3); }
-      to   { box-shadow: 0 0 22px rgba(255,140,66,0.85), 0 0 40px rgba(232,200,74,0.4); }
-    }
-
-    /* Chance gimmick – reel slow pulse */
-    .reel.chance-pulse {
-      animation: chancePulse 0.5s ease-in-out infinite;
-    }
-    @keyframes chancePulse {
-      0%   { transform: scaleY(1);    filter: blur(0px); }
-      50%  { transform: scaleY(0.94); filter: blur(2px); }
-      100% { transform: scaleY(1);    filter: blur(0px); }
+    @keyframes reachMatchGlow {
+      from { box-shadow: 0 0 12px rgba(255,78,80,0.6), inset 0 0 8px rgba(255,78,80,0.15); }
+      to   { box-shadow: 0 0 40px rgba(255,78,80,1),   0 0 70px rgba(255,140,66,0.55), inset 0 0 20px rgba(255,78,80,0.25); }
     }
 
     /* Winner glow */
@@ -193,77 +109,123 @@
     }
     @keyframes winGlow {
       from { box-shadow: 0 0 8px rgba(232,200,74,0.3); }
-      to   { box-shadow: 0 0 28px rgba(232,200,74,0.85), 0 0 48px rgba(232,200,74,0.35); }
+      to   { box-shadow: 0 0 30px rgba(232,200,74,0.9), 0 0 55px rgba(232,200,74,0.35); }
     }
+
+    /* ── Reel image ── */
+    .reel {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .reel img {
+      width: 82%; height: 82%; object-fit: contain;
+      border-radius: 8px; user-select: none; pointer-events: none; display: block;
+    }
+
+    /* Spin – slightly slower */
+    .reel.spinning { animation: spinBlur 0.16s linear infinite; }
+    @keyframes spinBlur {
+      0%   { filter: blur(0px);  transform: scaleY(1);    }
+      25%  { filter: blur(3px);  transform: scaleY(0.96); }
+      50%  { filter: blur(7px);  transform: scaleY(0.90); }
+      75%  { filter: blur(3px);  transform: scaleY(0.96); }
+      100% { filter: blur(0px);  transform: scaleY(1);    }
+    }
+
+    /* Stop bounce */
+    .reel.stopping {
+      animation: stopBounce 0.4s cubic-bezier(.36,.07,.19,.97) forwards;
+    }
+    @keyframes stopBounce {
+      0%   { transform: scaleY(0.90); filter: blur(4px); }
+      55%  { transform: scaleY(1.08); filter: blur(0); }
+      78%  { transform: scaleY(0.97); }
+      100% { transform: scaleY(1); }
+    }
+
+    /* Reach: last reel slow pulse */
+    .reel.reach-pulse {
+      animation: reachPulse 0.45s ease-in-out infinite;
+    }
+    @keyframes reachPulse {
+      0%   { transform: scaleY(1);    filter: blur(0px); }
+      50%  { transform: scaleY(0.93); filter: blur(3px); }
+      100% { transform: scaleY(1);    filter: blur(0px); }
+    }
+
+    /* ── STOP buttons ── */
+    .stop-btn {
+      width: 100%;
+      height: clamp(34px, 10vw, 44px);
+      border: none; border-radius: 10px;
+      font-size: clamp(0.7rem, 3.2vw, 0.9rem);
+      font-weight: 900; letter-spacing: 0.12em;
+      cursor: pointer; touch-action: manipulation;
+      transition: transform 0.1s, box-shadow 0.1s, opacity 0.15s, background 0.2s;
+      -webkit-appearance: none; user-select: none;
+      background: #ddd; color: #aaa;
+      box-shadow: none;
+    }
+    .stop-btn.active {
+      background: linear-gradient(135deg, #ff5f5f, #e83030);
+      color: #fff;
+      box-shadow: 0 3px 14px rgba(232,48,48,0.45), 0 2px 0 rgba(0,0,0,0.1);
+      animation: stopBtnPulse 0.7s ease-in-out infinite alternate;
+    }
+    @keyframes stopBtnPulse {
+      from { box-shadow: 0 3px 10px rgba(232,48,48,0.35); }
+      to   { box-shadow: 0 3px 22px rgba(232,48,48,0.7),  0 0 30px rgba(232,48,48,0.3); }
+    }
+    .stop-btn.active:active {
+      transform: scale(0.94) translateY(2px);
+      box-shadow: 0 1px 6px rgba(232,48,48,0.3);
+    }
+    .stop-btn:disabled { opacity: 0.38; cursor: not-allowed; animation: none; }
 
     /* ── Hint ── */
     .reel-hint {
       text-align: center;
       font-size: clamp(0.65rem, 2.6vw, 0.76rem);
-      color: #bbb;
-      height: 1.6em;
-      margin-bottom: clamp(8px, 2.5vw, 14px);
+      color: #bbb; height: 1.6em;
+      margin-bottom: clamp(6px, 2vw, 12px);
       transition: color 0.3s;
     }
     .reel-hint.active { color: #e8a020; font-weight: 600; }
 
-    /* ── Controls ── */
+    /* ── Credits / message / SPIN ── */
     .controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: clamp(8px, 2.5vw, 12px);
+      display: flex; flex-direction: column;
+      align-items: center; gap: clamp(6px, 2vw, 10px);
     }
-
     .credits-row {
-      display: flex;
-      gap: clamp(20px, 6vw, 32px);
-      font-size: clamp(0.78rem, 3.2vw, 0.9rem);
-      color: #888;
+      display: flex; gap: clamp(20px, 6vw, 32px);
+      font-size: clamp(0.78rem, 3.2vw, 0.9rem); color: #888;
     }
-    .credits-row span strong {
-      color: #1a1a1a;
-      font-size: clamp(1rem, 4.2vw, 1.2rem);
-    }
+    .credits-row span strong { color: #1a1a1a; font-size: clamp(1rem, 4.2vw, 1.2rem); }
 
     .message {
-      min-height: 2.6em;
-      font-size: clamp(0.78rem, 3.4vw, 1rem);
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.4;
-      padding: 0 4px;
-      color: #888;
+      min-height: 2.6em; font-size: clamp(0.78rem, 3.4vw, 1rem);
+      font-weight: 700; text-align: center; line-height: 1.4; padding: 0 4px; color: #888;
     }
     .message.win     { color: #c88a00; }
     .message.lose    { color: #bbb; }
-    .message.chance  { color: #e86020; animation: chanceMsgPulse 0.35s linear infinite alternate; }
-    .message.jackpot { color: #e83030; animation: jackpotFlash  0.35s linear infinite alternate; }
-    @keyframes chanceMsgPulse {
-      from { opacity: 0.65; } to { opacity: 1; }
-    }
+    .message.jackpot { color: #e83030; animation: jackpotFlash 0.35s linear infinite alternate; }
     @keyframes jackpotFlash {
       from { text-shadow: none; }
-      to   { text-shadow: 0 0 18px rgba(232,48,48,0.7); }
+      to   { text-shadow: 0 0 18px rgba(232,48,48,0.8); }
     }
 
-    /* SPIN button */
     .spin-btn {
       width: min(260px, 80vw);
       height: clamp(52px, 14vw, 62px);
-      border: none;
-      border-radius: 32px;
+      border: none; border-radius: 32px;
       background: linear-gradient(135deg, #f0d050, #e8a030);
-      color: #fff;
-      font-size: clamp(1rem, 4.5vw, 1.25rem);
-      font-weight: 900;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-      touch-action: manipulation;
+      color: #fff; font-size: clamp(1rem, 4.5vw, 1.25rem);
+      font-weight: 900; letter-spacing: 0.12em;
+      cursor: pointer; touch-action: manipulation;
       box-shadow: 0 4px 18px rgba(232,160,48,0.45), 0 2px 0 rgba(0,0,0,0.08);
       transition: transform 0.1s, box-shadow 0.1s, opacity 0.2s;
-      -webkit-appearance: none;
-      user-select: none;
+      -webkit-appearance: none; user-select: none;
     }
     .spin-btn:active:not(:disabled) {
       transform: scale(0.95) translateY(2px);
@@ -271,37 +233,103 @@
     }
     .spin-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
+    /* ── REACH overlay ── */
+    #reach-overlay {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none; z-index: 60;
+      opacity: 0; transition: opacity 0.25s;
+    }
+    #reach-overlay.show { opacity: 1; }
+
+    #reach-bg {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+
+    #reach-text {
+      position: relative; z-index: 1;
+      font-size: clamp(3.5rem, 16vw, 7rem);
+      font-weight: 900; letter-spacing: 0.12em;
+      color: #fff;
+      text-shadow:
+        0 0 20px #ff4e50,
+        0 0 50px #ff4e50,
+        0 0 90px rgba(255,140,66,0.7);
+      transform: scale(0.4) rotate(-6deg);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #reach-overlay.show #reach-text {
+      transform: scale(1) rotate(-3deg);
+    }
+
+    #reach-sub {
+      position: relative; z-index: 1;
+      font-size: clamp(0.9rem, 4vw, 1.4rem);
+      font-weight: 700; color: #ffe066;
+      letter-spacing: 0.18em; margin-top: 12px;
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.3s 0.2s, transform 0.3s 0.2s;
+    }
+    #reach-overlay.show #reach-sub { opacity: 1; transform: translateY(0); }
+
+    /* Screen flash */
+    #flash {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 59;
+      opacity: 0;
+    }
+    #flash.flash-on {
+      animation: screenFlash 0.14s ease-out forwards;
+    }
+    @keyframes screenFlash {
+      0%   { opacity: 0.75; background: #ff8c42; }
+      100% { opacity: 0; }
+    }
+
     /* Confetti */
     #confetti {
-      position: fixed;
-      top: 0; left: 0;
+      position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 100;
+      pointer-events: none; z-index: 100;
     }
   </style>
 </head>
 <body>
+
 <canvas id="confetti"></canvas>
+<div id="reach-overlay">
+  <div id="reach-bg"></div>
+  <div id="reach-text">REACH!!</div>
+  <div id="reach-sub">揃うか！？</div>
+</div>
+<div id="flash"></div>
 
 <h1>錦　櫂 ふりかけスロット</h1>
 <p class="subtitle">全リール揃ったら当たり！</p>
 
-<div class="machine">
+<div class="machine" id="machine">
   <div class="machine-header">🎰 NISIKI-KAI SLOT 🎰</div>
 
   <div class="reels">
-    <div class="reel-wrapper" id="w0" onclick="userStop(0)">
-      <div class="stop-label"><span>STOP</span></div>
-      <div class="reel" id="r0"><img id="img0" src="" alt=""></div>
+    <div class="reel-col">
+      <div class="reel-wrapper" id="w0">
+        <div class="reel" id="r0"><img id="img0" src="" alt=""></div>
+      </div>
+      <button class="stop-btn" id="sb0" onclick="userStop(0)" disabled>STOP</button>
     </div>
-    <div class="reel-wrapper" id="w1" onclick="userStop(1)">
-      <div class="stop-label"><span>STOP</span></div>
-      <div class="reel" id="r1"><img id="img1" src="" alt=""></div>
+    <div class="reel-col">
+      <div class="reel-wrapper" id="w1">
+        <div class="reel" id="r1"><img id="img1" src="" alt=""></div>
+      </div>
+      <button class="stop-btn" id="sb1" onclick="userStop(1)" disabled>STOP</button>
     </div>
-    <div class="reel-wrapper" id="w2" onclick="userStop(2)">
-      <div class="stop-label"><span>STOP</span></div>
-      <div class="reel" id="r2"><img id="img2" src="" alt=""></div>
+    <div class="reel-col">
+      <div class="reel-wrapper" id="w2">
+        <div class="reel" id="r2"><img id="img2" src="" alt=""></div>
+      </div>
+      <button class="stop-btn" id="sb2" onclick="userStop(2)" disabled>STOP</button>
     </div>
   </div>
 
@@ -327,16 +355,14 @@ const PRODUCTS = [
   { name: '錦　櫂ギフトセット',   img: 'https://makeshop-multi-images.akamaized.net/nisikikai/itemimages/0000000004783_pkdF5lg.jpg' }
 ];
 
-// ── State ───────────────────────────────────────────────
 let credits = 10, won = 0;
-let gameState   = 'idle';                    // 'idle' | 'spinning' | 'gimmick'
-let reelState   = ['idle','idle','idle'];    // 'idle' | 'spinning' | 'stopped'
+let gameState   = 'idle';
+let reelState   = ['idle','idle','idle'];
 let stoppedOrder = [];
 let spinIntervals = [null, null, null];
 let currentIdx  = [0, 0, 0];
 let finalIdx    = [0, 0, 0];
 
-// ── Helpers ─────────────────────────────────────────────
 const rand = () => Math.floor(Math.random() * PRODUCTS.length);
 
 function showImage(i, idx) {
@@ -344,75 +370,92 @@ function showImage(i, idx) {
   img.src = PRODUCTS[idx].img;
   img.alt = PRODUCTS[idx].name;
 }
-
 function setMessage(text, cls = '') {
   const el = document.getElementById('message');
-  el.textContent = text;
-  el.className = 'message ' + cls;
+  el.textContent = text; el.className = 'message ' + cls;
 }
-
 function setHint(text, active = false) {
   const el = document.getElementById('hint');
   el.textContent = text;
   el.className = 'reel-hint' + (active ? ' active' : '');
 }
-
 function updateCredits() {
   document.getElementById('credits').textContent = credits;
   document.getElementById('won').textContent = won;
   document.getElementById('spinBtn').disabled = gameState !== 'idle' || credits <= 0;
 }
+function setStopBtn(i, active) {
+  const btn = document.getElementById('sb' + i);
+  btn.disabled = !active;
+  btn.className = 'stop-btn' + (active ? ' active' : '');
+}
+
+// ── Screen flash ────────────────────────────────────────
+let flashTimer = null;
+function triggerFlash(times = 1, interval = 160) {
+  let count = 0;
+  function doFlash() {
+    const el = document.getElementById('flash');
+    el.classList.remove('flash-on');
+    void el.offsetWidth; // reflow
+    el.classList.add('flash-on');
+    count++;
+    if (count < times) flashTimer = setTimeout(doFlash, interval);
+  }
+  doFlash();
+}
+
+// ── REACH overlay ───────────────────────────────────────
+function showReach() {
+  document.getElementById('reach-overlay').classList.add('show');
+}
+function hideReach() {
+  document.getElementById('reach-overlay').classList.remove('show');
+}
 
 // ── SPIN ────────────────────────────────────────────────
 function spin() {
   if (gameState !== 'idle' || credits <= 0) return;
-
   gameState    = 'spinning';
-  reelState    = ['spinning', 'spinning', 'spinning'];
+  reelState    = ['spinning','spinning','spinning'];
   stoppedOrder = [];
   credits--;
   updateCredits();
-
   if (navigator.vibrate) navigator.vibrate(25);
 
-  // 50% win rate: half the time force all 3 reels to match
+  // 50% win rate
   if (Math.random() < 0.5) {
     const sym = rand();
     finalIdx = [sym, sym, sym];
   } else {
     for (let i = 0; i < 3; i++) finalIdx[i] = rand();
-    // Prevent accidental win in the lose path
     if (finalIdx[0] === finalIdx[1] && finalIdx[1] === finalIdx[2]) {
       finalIdx[2] = (finalIdx[2] + 1 + Math.floor(Math.random() * (PRODUCTS.length - 1))) % PRODUCTS.length;
     }
   }
 
   for (let i = 0; i < 3; i++) {
-    const w = document.getElementById('w' + i);
-    w.classList.remove('winner', 'chance-glow');
-    w.classList.add('can-stop');
-    const r = document.getElementById('r' + i);
-    r.classList.remove('stopping', 'chance-pulse');
-    r.classList.add('spinning');
+    document.getElementById('w' + i).classList.remove('winner','reach-match');
+    document.getElementById('r' + i).classList.remove('stopping','reach-pulse');
+    document.getElementById('r' + i).classList.add('spinning');
+    setStopBtn(i, true);
     let c = currentIdx[i];
     spinIntervals[i] = setInterval(() => {
       c = (c + 1) % PRODUCTS.length;
       showImage(i, c);
-    }, 80);
+    }, 130);
   }
 
-  setMessage('リールをタップして止めてください！');
-  setHint('タップ → STOP', true);
+  setMessage('STOPボタンで止めてください！');
+  setHint('▼ 下のボタンで停止 ▼', true);
 }
 
-// ── User taps a reel ────────────────────────────────────
+// ── User taps STOP ──────────────────────────────────────
 function userStop(i) {
   if (gameState !== 'spinning') return;
   if (reelState[i] !== 'spinning') return;
 
   const stillSpinning = reelState.filter(s => s === 'spinning').length;
-
-  // Is this the LAST reel? → check for 2-match gimmick
   if (stillSpinning === 1 && stoppedOrder.length === 2) {
     const [s0, s1] = stoppedOrder;
     if (finalIdx[s0] === finalIdx[s1]) {
@@ -420,31 +463,25 @@ function userStop(i) {
       return;
     }
   }
-
   stopReelNormal(i);
 }
 
 // ── Normal stop ─────────────────────────────────────────
 function stopReelNormal(i) {
   clearInterval(spinIntervals[i]);
-  reelState[i]  = 'stopped';
+  reelState[i] = 'stopped';
   stoppedOrder.push(i);
-
   showImage(i, finalIdx[i]);
   currentIdx[i] = finalIdx[i];
-
   if (navigator.vibrate) navigator.vibrate(35);
 
-  const w = document.getElementById('w' + i);
-  w.classList.remove('can-stop');
-
+  setStopBtn(i, false);
   const r = document.getElementById('r' + i);
   r.classList.remove('spinning');
   r.classList.add('stopping');
   r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
 
   const remaining = reelState.filter(s => s === 'spinning').length;
-
   if (remaining === 0) {
     setTimeout(checkResult, 420);
   } else {
@@ -454,59 +491,69 @@ function stopReelNormal(i) {
 
 function updateHint() {
   const remaining = [0,1,2].filter(i => reelState[i] === 'spinning').length;
-  if (remaining === 1) {
-    // Do 2 stopped reels match?
-    if (stoppedOrder.length === 2 && finalIdx[stoppedOrder[0]] === finalIdx[stoppedOrder[1]]) {
-      setHint('2つ揃った！最後を止めて！', true);
-      setMessage('あと1つ！チャンスがあるかも…', '');
-    } else {
-      setHint('あと1つ！', true);
-    }
+  if (remaining === 1 && stoppedOrder.length === 2 &&
+      finalIdx[stoppedOrder[0]] === finalIdx[stoppedOrder[1]]) {
+    setHint('2つ揃った！最後を止めて！', true);
+    setMessage('あと1つ！チャンスかも…', '');
+  } else if (remaining === 1) {
+    setHint('あと1つ！', true);
   } else {
-    setHint('タップ → STOP', true);
+    setHint('▼ 下のボタンで停止 ▼', true);
   }
 }
 
-// ── Chance gimmick ──────────────────────────────────────
-function triggerChanceGimmick(i) {
+// ── REACH!! gimmick ─────────────────────────────────────
+function triggerChanceGimmick(reelIdx) {
   gameState = 'gimmick';
+  clearInterval(spinIntervals[reelIdx]);
+  reelState[reelIdx] = 'stopped';
+  stoppedOrder.push(reelIdx);
 
-  clearInterval(spinIntervals[i]);
-  reelState[i] = 'stopped';
-  stoppedOrder.push(i);
+  // Disable all buttons
+  for (let i = 0; i < 3; i++) setStopBtn(i, false);
 
-  const matchIdx = finalIdx[stoppedOrder[0]]; // image from the 2 matching reels
-  const w = document.getElementById('w' + i);
-  const r = document.getElementById('r' + i);
-
-  // Remove can-stop immediately so no double-tap
-  w.classList.remove('can-stop');
+  const matchIdx = finalIdx[stoppedOrder[0]];
+  const w = document.getElementById('w' + reelIdx);
+  const r = document.getElementById('r' + reelIdx);
   r.classList.remove('spinning');
 
-  // ① Show the MATCHING image (tease!)
-  showImage(i, matchIdx);
-  setMessage('🔥 チャンス！！ 揃うか！？', 'chance');
+  // Flash matched reels
+  stoppedOrder.slice(0, 2).forEach(idx => {
+    document.getElementById('w' + idx).classList.add('reach-match');
+  });
+
+  // Show matching image on last reel & start reach pulse
+  showImage(reelIdx, matchIdx);
+  r.classList.add('reach-pulse');
+
+  // Flash + REACH overlay + machine shake
+  triggerFlash(4, 150);
+  setTimeout(showReach, 80);
+  document.getElementById('machine').classList.add('reach-active');
+  if (navigator.vibrate) navigator.vibrate([60,30,80,30,60,30,120]);
+
+  setMessage('🔥🔥 REACH！！ 揃うか！？ 🔥🔥', 'jackpot');
   setHint('');
-  w.classList.add('chance-glow');
-  r.classList.add('chance-pulse');
-  if (navigator.vibrate) navigator.vibrate([70, 35, 70, 35, 120]);
 
-  // ② After 1.4s → snap to actual final image
+  // After 1.6s: resolve
   setTimeout(() => {
-    w.classList.remove('chance-glow');
-    r.classList.remove('chance-pulse');
+    hideReach();
+    document.getElementById('machine').classList.remove('reach-active');
+    stoppedOrder.slice(0, 2).forEach(idx => {
+      document.getElementById('w' + idx).classList.remove('reach-match');
+    });
+    r.classList.remove('reach-pulse');
 
-    showImage(i, finalIdx[i]);
-    currentIdx[i] = finalIdx[i];
-
+    showImage(reelIdx, finalIdx[reelIdx]);
+    currentIdx[reelIdx] = finalIdx[reelIdx];
     r.classList.add('stopping');
     r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
 
     setTimeout(() => {
-      gameState = 'spinning'; // hand off to checkResult
+      gameState = 'spinning';
       checkResult();
-    }, 420);
-  }, 1400);
+    }, 440);
+  }, 1600);
 }
 
 // ── Check result ─────────────────────────────────────────
@@ -516,24 +563,22 @@ function checkResult() {
   const isJackpot = isWin && a === 5;
 
   gameState = 'idle';
-  reelState = ['idle', 'idle', 'idle'];
+  reelState = ['idle','idle','idle'];
   setHint('SPIN を押してスタート');
   updateCredits();
 
   if (isWin) {
     const prize = isJackpot ? 30 : 10;
-    credits += prize;
-    won     += prize;
+    credits += prize; won += prize;
     for (let i = 0; i < 3; i++) document.getElementById('w' + i).classList.add('winner');
-
     if (isJackpot) {
       setMessage('🎊 JACKPOT！ ギフトセット当選！ +30コイン', 'jackpot');
       if (navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
-      launchConfetti(160);
+      launchConfetti(180);
     } else {
       setMessage(`🎉 当たり！ ${PRODUCTS[a].name} ×3！ +${prize}コイン`, 'win');
       if (navigator.vibrate) navigator.vibrate([60,30,60]);
-      launchConfetti(70);
+      launchConfetti(80);
     }
   } else {
     setMessage('惜しい！もう一度チャレンジ！', 'lose');
@@ -559,9 +604,8 @@ const ctx    = canvas.getContext('2d');
 let particles = [];
 
 function launchConfetti(n) {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const colors  = ['#e8c84a','#ff8c42','#ff4e50','#43cfff','#a8ff78','#ffffff'];
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ['#e8c84a','#ff8c42','#ff4e50','#43cfff','#a8ff78','#ffffff'];
   for (let i = 0; i < n; i++) {
     particles.push({
       x: Math.random() * canvas.width, y: -10,
@@ -575,7 +619,6 @@ function launchConfetti(n) {
   }
   requestAnimationFrame(drawConfetti);
 }
-
 function drawConfetti() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles = particles.filter(p => p.y < canvas.height + 20);
@@ -592,8 +635,7 @@ function drawConfetti() {
 }
 
 window.addEventListener('resize', () => {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 });
 
 // ── Init ─────────────────────────────────────────────────
