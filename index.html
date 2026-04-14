@@ -161,6 +161,7 @@
     .reel {
       width: 100%; height: 100%;
       display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2; /* ::after pseudo の上に出す */
     }
     .reel img {
       width: 82%; height: 82%; object-fit: contain;
@@ -455,6 +456,72 @@
       to   { filter:brightness(1.45);text-shadow:0 0 40px rgba(255,224,102,1),0 0 80px rgba(255,140,66,0.4); }
     }
 
+    /* ── Reach zoom overlay ── */
+    #reach-zoom {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none; z-index: 65;
+      opacity: 0; transition: opacity 0.45s;
+    }
+    #reach-zoom.show { opacity: 1; }
+
+    #reach-zoom-bg {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.72);
+    }
+
+    #reach-zoom-box {
+      position: relative; z-index: 1;
+      width: clamp(200px, 56vw, 290px);
+      height: clamp(200px, 56vw, 290px);
+      background: #fff; border-radius: 26px;
+      display: flex; align-items: center; justify-content: center;
+      transform: scale(0.35) rotate(-6deg);
+      transition: transform 0.55s cubic-bezier(0.34, 1.5, 0.64, 1);
+      animation: zoomBoxGlow 0.22s ease-in-out infinite alternate;
+    }
+    #reach-zoom.show #reach-zoom-box {
+      transform: scale(1) rotate(0deg);
+    }
+    @keyframes zoomBoxGlow {
+      from { box-shadow: 0 0 25px rgba(255,78,80,0.7), 0 0 50px rgba(255,140,66,0.3); }
+      to   { box-shadow: 0 0 65px rgba(255,78,80,1),   0 0 120px rgba(255,140,66,0.7), 0 0 160px rgba(255,224,102,0.3); }
+    }
+    /* 虹色スピンボーダー */
+    #reach-zoom-box::before {
+      content: '';
+      position: absolute; inset: -7px; border-radius: 32px;
+      background: conic-gradient(#ff4e50,#ff8c42,#ffe066,#a8ff78,#43cfff,#ff4e50);
+      animation: spinBorder 0.6s linear infinite;
+      z-index: -1;
+    }
+
+    #reach-zoom-reel {
+      width: 86%; height: 86%;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    #reach-zoom-reel.reach-spin {
+      animation: reachSlowSpin 0.55s ease-in-out infinite;
+    }
+    #reach-zoom-img {
+      width: 100%; height: 100%;
+      object-fit: contain; border-radius: 12px; pointer-events: none;
+    }
+
+    #reach-zoom-label {
+      position: relative; z-index: 1;
+      font-size: clamp(1.3rem, 6vw, 2.2rem);
+      font-weight: 900; letter-spacing: 0.2em; margin-top: 22px;
+      opacity: 0; transform: translateY(14px) scale(0.8);
+      transition: opacity 0.4s 0.3s, transform 0.4s 0.3s;
+    }
+    #reach-zoom.show #reach-zoom-label {
+      opacity: 1; transform: translateY(0) scale(1);
+      animation: subPulse 0.5s ease-in-out infinite alternate;
+    }
+
     /* Machine win glow */
     .machine.win-active {
       animation: winMachinePulse 0.45s ease-in-out infinite alternate;
@@ -496,6 +563,14 @@
   <div id="reach-bg"></div>
   <div id="reach-text">REACH!!</div>
   <div id="reach-sub">揃うか！？</div>
+</div>
+
+<div id="reach-zoom">
+  <div id="reach-zoom-bg"></div>
+  <div id="reach-zoom-box">
+    <div id="reach-zoom-reel"><img id="reach-zoom-img" src="" alt=""></div>
+  </div>
+  <div id="reach-zoom-label">どうなる！？</div>
 </div>
 
 <div id="win-overlay">
@@ -626,13 +701,11 @@ function burstStars(reelIndices) {
   });
 }
 
-// ── REACH overlay ───────────────────────────────────────
-function showReach() {
-  document.getElementById('reach-overlay').classList.add('show');
-}
-function hideReach() {
-  document.getElementById('reach-overlay').classList.remove('show');
-}
+// ── REACH / ZOOM overlay ────────────────────────────────
+function showReach() { document.getElementById('reach-overlay').classList.add('show'); }
+function hideReach() { document.getElementById('reach-overlay').classList.remove('show'); }
+function showZoom()  { document.getElementById('reach-zoom').classList.add('show'); }
+function hideZoom()  { document.getElementById('reach-zoom').classList.remove('show'); }
 
 // ── SPIN ────────────────────────────────────────────────
 function spin() {
@@ -725,6 +798,7 @@ function updateHint() {
 
 // ── REACH!! gimmick ─────────────────────────────────────
 const REACH_DURATION = 7000; // 7秒
+const ZOOM_START     = 1700; // REACHオーバーレイ → ズームに切り替わるタイミング
 
 function triggerChanceGimmick(reelIdx) {
   gameState = 'gimmick';
@@ -734,48 +808,64 @@ function triggerChanceGimmick(reelIdx) {
 
   for (let i = 0; i < 3; i++) setStopBtn(i, false);
 
-  const w = document.getElementById('w' + reelIdx);
-  const r = document.getElementById('r' + reelIdx);
+  const w     = document.getElementById('w'    + reelIdx);
+  const r     = document.getElementById('r'    + reelIdx);
+  const zImg  = document.getElementById('reach-zoom-img');
+  const zReel = document.getElementById('reach-zoom-reel');
   r.classList.remove('spinning');
 
-  // 最後のリールだけ光る
+  // 最後のリールだけグロー
   w.classList.add('reach-last');
+  r.classList.add('reach-spin');
+  zReel.classList.add('reach-spin');
 
-  // ゆっくり回転開始（250ms間隔）
+  // ゆっくり回転（実リール & ズームの両方を更新）
   let c = currentIdx[reelIdx];
+  zImg.src = PRODUCTS[c].img;
   const slowInterval = setInterval(() => {
     c = (c + 1) % PRODUCTS.length;
     showImage(reelIdx, c);
+    zImg.src = PRODUCTS[c].img;
   }, 250);
-  r.classList.add('reach-spin');
 
-  // マシンは控えめなグロー
   document.getElementById('machine').classList.add('reach-active');
-
   setHint('');
   setMessage('🔥🔥 REACH！！ 揃うか！？ 🔥🔥', 'jackpot');
 
-  // REACH オーバーレイ
+  // ── フェーズ1: REACH オーバーレイ（0〜1.7秒）────────
   setTimeout(() => showReach(), 150);
-
-  // フラッシュ: 最初の盛り上がり部分のみ(0〜1.5秒)
-  [[0,'#ff8c42'],[220,'#fff'],[440,'#ff4e50'],[700,'#ffe066'],[1000,'#fff'],[1400,'#ff8c42']]
-    .forEach(([t,c]) => setTimeout(() => triggerFlash(c), t));
-
-  // 最後のリールだけ星を定期的に飛ばす
-  const starTimes = [400, 1200, 2200, 3400, 4600, 5800];
-  starTimes.forEach(t => setTimeout(() => burstStars([reelIdx]), t));
-
-  // バイブ
+  [[0,'#ff8c42'],[200,'#fff'],[400,'#ff4e50'],[650,'#ffe066'],[950,'#fff'],[1300,'#ff8c42']]
+    .forEach(([t, col]) => setTimeout(() => triggerFlash(col), t));
   if (navigator.vibrate) navigator.vibrate([80,40,80,40,120,60,80,40,80]);
+
+  // ── フェーズ2: ズームイン（1.7秒〜）────────────────
+  setTimeout(() => {
+    hideReach();
+    showZoom();
+    setMessage('👀 どうなる！？', 'chance');
+    // ズーム開始直後にフラッシュ
+    triggerFlash('#ffe066');
+    setTimeout(() => triggerFlash('#fff'), 200);
+    if (navigator.vibrate) navigator.vibrate([60,30,120,30,60]);
+  }, ZOOM_START);
+
+  // ズーム中: ズームボックスから星を定期的に飛ばす
+  [2200, 3100, 4100, 5200, 6200].forEach(t =>
+    setTimeout(() => burstStars([reelIdx]), t)
+  );
+  // ズーム中: 時折フラッシュ
+  [2500, 4000, 5500].forEach(t =>
+    setTimeout(() => triggerFlash('#ff8c42'), t)
+  );
 
   // ── 7秒後に解決 ─────────────────────────────────────
   setTimeout(() => {
     clearInterval(slowInterval);
-    hideReach();
+    hideZoom();
     document.getElementById('machine').classList.remove('reach-active');
     w.classList.remove('reach-last');
     r.classList.remove('reach-spin');
+    zReel.classList.remove('reach-spin');
 
     showImage(reelIdx, finalIdx[reelIdx]);
     currentIdx[reelIdx] = finalIdx[reelIdx];
@@ -784,10 +874,7 @@ function triggerChanceGimmick(reelIdx) {
     r.classList.add('stopping');
     r.addEventListener('animationend', () => r.classList.remove('stopping'), { once: true });
 
-    setTimeout(() => {
-      gameState = 'spinning';
-      checkResult();
-    }, 460);
+    setTimeout(() => { gameState = 'spinning'; checkResult(); }, 460);
   }, REACH_DURATION);
 }
 
